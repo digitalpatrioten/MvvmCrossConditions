@@ -17,20 +17,10 @@ namespace MvvmCross.Conditions.Droid
 
     public class ConditionalDroidPresenter : MvxAndroidViewPresenter
     {
-        Activity _currentAcitvity;
-
-        public Activity CurrentActivity {
-            get {
-                return _currentAcitvity;
-            }
-            set {
-                _currentAcitvity = value;
-            }
-        }
-
+      
         public ConditionalDroidPresenter() : base()
         {
-            _currentAcitvity = Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity;
+          
         }
 
         public override void Show(MvxViewModelRequest request)
@@ -57,23 +47,78 @@ namespace MvvmCross.Conditions.Droid
                     }
                 }
                 else {
-                    // reuse the viewModel
-                    var intent = CreateIntentForRequest(request);
-
-                    // This little thingy is used to "inject the viewmodel" into the activity to avoid reinstantiation
-                    // see MvxAndroidViewsContainer.TryGetEmbeddedViewModel
-                    var key = Mvx.Resolve<IMvxChildViewModelCache>().Cache(viewModel);
-                    Bundle extras = intent.Extras;
-                    extras.PutInt("MvxSubViewModelKey", key); // MvxSubViewModelKey is a special static key.. we cant use MvxAndroidViewsContainer.SubViewModelKey since its static 
-                    intent.PutExtras(extras);
-                    Show(intent);
+                    var cacheKey = Mvx.Resolve<IMvxChildViewModelCache>().Cache(viewModel);
+                    ShowViewController(request, cacheKey);
                 }
             }
             else {
-                // no conditions, classiv way
-                var intent = CreateIntentForRequest(request);
-                Show(intent);
+                ShowViewController(request);
             }
+        }
+
+        protected void ShowViewController(MvxViewModelRequest request, int cacheKey = -1)
+        {
+            ViewDetails viewDetails = IdentifyView(request);
+
+            if (viewDetails.category == ViewCategory.Fragment) {
+                ShowFragment(request, cacheKey);
+            }
+            else {
+                ShowActivity(request, cacheKey);
+            }
+        }
+
+        protected void ShowActivity(MvxViewModelRequest request, int cacheKey = -1)
+        {
+            var intent = CreateIntentForRequest(request);
+
+            if (cacheKey >= 0) {// reuse the viewModel
+                // This little thingy is used to "inject the viewmodel" into the activity to avoid reinstantiation
+                // see MvxAndroidViewsContainer.TryGetEmbeddedViewModel
+                Bundle extras = intent.Extras;
+                extras.PutInt("MvxSubViewModelKey", cacheKey); // MvxSubViewModelKey is a special static key.. we cant use MvxAndroidViewsContainer.SubViewModelKey since its static 
+                intent.PutExtras(extras);
+            }
+            Show(intent);
+        }
+
+        protected void ShowFragment(MvxViewModelRequest request, int cacheKey = -1)
+        {
+            throw new NotImplementedException();
+            // TODO: this needs to be implemented fro fragment-navigation support
+            /*
+            public interface IMvxChildViewContainer
+            {
+                Fragment RootFragment {
+                    get;
+                }
+            }
+
+
+            var activity = Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity;
+            IMvxChildViewContainer fragmentActivity = activity as IMvxChildViewContainer;
+
+            if (fragmentActivity != null) {
+                Fragment rootFragment = (Fragment)fragmentActivity.RootFragment;
+                IMvxParameterValuesContainer newFragment = (IMvxParameterValuesContainer)Activator.CreateInstance(viewDetails.type, fragmentActivity);
+                newFragment.ParameterValues = request.ParameterValues;
+                FragmentTransaction trans = rootFragment.FragmentManager.BeginTransaction();
+                IMvxViewGroupContainer rootFragment = rootFragment as IMvxViewGroupContainer;
+                if (rootFragment != null) {
+                    Fragment fragmentToReplace = newFragment as Fragment;
+                    trans.Replace(rootFragment.Layout.Id, fragmentToReplace);
+                    trans.AddToBackStack(null);
+                    trans.Commit();
+
+                    IMvxParameterValuesStackContainer stackContainer = rootFragment as IMvxParameterValuesStackContainer;
+                    if (stackContainer != null) {
+                    }
+                }
+            }
+            else {
+                // TODO: throw an exception that the fragment is not able to be shown
+                // since the activity is incompatible
+            }*/
         }
 
         public bool ImplementsInterface(Type type, Type ifaceType)
