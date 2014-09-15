@@ -7,6 +7,7 @@ using Cirrious.MvvmCross.Droid.Views;
 using Cirrious.CrossCore.Droid.Platform;
 using Android.App;
 using Android.OS;
+using Android.Util;
 
 namespace MvvmCross.Conditions.Droid
 {
@@ -79,6 +80,19 @@ namespace MvvmCross.Conditions.Droid
                 extras.PutInt("MvxSubViewModelKey", cacheKey); // MvxSubViewModelKey is a special static key.. we cant use MvxAndroidViewsContainer.SubViewModelKey since its static 
                 intent.PutExtras(extras);
             }
+
+            var className = intent.ResolveActivity(this.Activity.PackageManager).ClassName;
+
+            try {
+                var intentService = Mvx.Resolve<IManipulateIntentService>();
+                if (intentService != null) {
+                    intent = intentService.ManipulateIntent(intent, className);
+                }
+            }
+            catch (Exception e) {
+                Log.WriteLine(LogPriority.Error, "ShowActivity", e.Message);
+            }
+
             Show(intent);
         }
 

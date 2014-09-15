@@ -47,6 +47,7 @@
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="ConditionalDroidDispatcher.cs" />
     <Compile Include="ConditionalDroidPresenter.cs" />
+    <Compile Include="IManipulateIntentService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
