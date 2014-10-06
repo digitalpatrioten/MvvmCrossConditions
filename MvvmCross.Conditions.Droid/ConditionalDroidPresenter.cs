@@ -29,6 +29,7 @@ namespace MvvmCross.Conditions.Droid
 
         void HandleViewModelLoaded(MvxViewModelRequest request, IConditionalViewModel viewModel, bool viewModelShouldHandleError)
         {
+            //we need to run the check on the main thread so view models can have some sort of visual output if desired
             Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity.RunOnUiThread(() => {
                 if (viewModel.Precondition(viewModelShouldHandleError) == false) {
                     if (viewModelShouldHandleError) {
@@ -73,6 +74,7 @@ namespace MvvmCross.Conditions.Droid
                     OnViewModelLoaded(request, viewModel, viewModelShouldHandleError);
                 });
 
+                //we need to start the model load async so we dont block the uithread
                 loaderTask.Start();
             }
             else {
