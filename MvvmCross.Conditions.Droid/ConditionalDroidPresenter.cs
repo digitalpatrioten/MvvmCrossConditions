@@ -8,6 +8,7 @@ using Cirrious.CrossCore.Droid.Platform;
 using Android.App;
 using Android.OS;
 using Android.Util;
+using System.Threading.Tasks;
 
 namespace MvvmCross.Conditions.Droid
 {
@@ -16,27 +17,19 @@ namespace MvvmCross.Conditions.Droid
 
     }
 
+    public delegate void ViewModelLoadedEventHandler(MvxViewModelRequest request,IConditionalViewModel viewModel,bool viewModelShouldHandleError);
+
     public class ConditionalDroidPresenter : MvxAndroidViewPresenter
     {
       
         public ConditionalDroidPresenter() : base()
         {
-          
+            ViewModelLoaded += HandleViewModelLoaded;
         }
 
-        public override void Show(MvxViewModelRequest request)
+        void HandleViewModelLoaded(MvxViewModelRequest request, IConditionalViewModel viewModel, bool viewModelShouldHandleError)
         {
-            Show(request, true);
-        }
-
-        // thats an OVERLOAD!, just in case somebody reads way to fast ;)
-        public void Show(MvxViewModelRequest request, bool viewModelShouldHandleError = true)
-        {
-            // TODO: use an as cast with an null check instead?
-            if (ImplementsInterface(request.ViewModelType, typeof(IConditionalViewModel))) {
-                // check condition here
-                var loader = Mvx.Resolve<IMvxViewModelLoader>();
-                var viewModel = loader.LoadViewModel(request, null) as IConditionalViewModel;
+            Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity.RunOnUiThread(() => {
                 if (viewModel.Precondition(viewModelShouldHandleError) == false) {
                     if (viewModelShouldHandleError) {
                         // in this case the ViewModel already handled the error - if it did nothing ( no redirect ) basically just nothing happens
@@ -51,6 +44,36 @@ namespace MvvmCross.Conditions.Droid
                     var cacheKey = Mvx.Resolve<IMvxChildViewModelCache>().Cache(viewModel);
                     ShowViewController(request, cacheKey);
                 }
+            });
+        }
+
+        public override void Show(MvxViewModelRequest request)
+        {
+            Show(request, true);
+        }
+
+        protected event ViewModelLoadedEventHandler ViewModelLoaded;
+
+        protected virtual void OnViewModelLoaded(MvxViewModelRequest request, IConditionalViewModel viewModel, bool viewModelShouldHandleError)
+        {
+            var handler = ViewModelLoaded;
+            if (handler != null)
+                handler(request, viewModel, viewModelShouldHandleError);
+        }
+
+        // thats an OVERLOAD!, just in case somebody reads way to fast ;)
+        public void Show(MvxViewModelRequest request, bool viewModelShouldHandleError = true)
+        {
+            // TODO: use an as cast with an null check instead?
+            if (ImplementsInterface(request.ViewModelType, typeof(IConditionalViewModel))) {
+                // check condition here
+                var loaderTask = new Task(() => {
+                    var loader = Mvx.Resolve<IMvxViewModelLoader>();
+                    var viewModel = loader.LoadViewModel(request, null) as IConditionalViewModel;
+                    OnViewModelLoaded(request, viewModel, viewModelShouldHandleError);
+                });
+
+                loaderTask.Start();
             }
             else {
                 ShowViewController(request);
