@@ -11,7 +11,7 @@
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
-    <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
+    <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
     <AssemblyName>MvvmCross.Conditions.Dropd</AssemblyName>
     <TargetFrameworkVersion>v4.4</TargetFrameworkVersion>
     <ProductVersion>8.0.30703</ProductVersion>
