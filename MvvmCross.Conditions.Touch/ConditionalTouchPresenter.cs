@@ -57,7 +57,7 @@ namespace MvvmCross.Conditions.Touch
             }
         }
 
-        public override void Show(IMvxTouchView view)
+        public void Show(IMvxTouchView view, bool animated)
         {
             var viewController = view as UIViewController;
             if (viewController == null)
@@ -66,7 +66,12 @@ namespace MvvmCross.Conditions.Touch
             if (MasterNavigationController == null)
                 ShowFirstView(viewController);
             else
-                MasterNavigationController.PushViewController(viewController, true /*animated*/);
+                MasterNavigationController.PushViewController(viewController, animated /*animated*/);
+        }
+
+        public override void Show(IMvxTouchView view)
+        {
+            Show(view, true);
         }
 
         public bool ImplementsInterface(Type type, Type ifaceType)
