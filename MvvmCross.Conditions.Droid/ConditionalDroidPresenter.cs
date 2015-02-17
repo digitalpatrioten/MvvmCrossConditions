@@ -42,8 +42,9 @@ namespace MvvmCross.Conditions.Droid
                     }
                 }
                 else {
-                    var cacheKey = Mvx.Resolve<IMvxChildViewModelCache>().Cache(viewModel);
-                    ShowViewController(request, cacheKey);
+                    //for us this does not work right now and leads to strange errors, not finding the view model after tombstoning
+                    //var cacheKey = Mvx.Resolve<IMvxChildViewModelCache>().Cache(viewModel);
+                    ShowViewController(request);
                 }
             });
         }
@@ -87,9 +88,11 @@ namespace MvvmCross.Conditions.Droid
             ViewDetails viewDetails = IdentifyView(request);
 
             if (viewDetails.category == ViewCategory.Fragment) {
+
                 ShowFragment(request, cacheKey);
             }
             else {
+
                 ShowActivity(request, cacheKey);
             }
         }
@@ -99,6 +102,7 @@ namespace MvvmCross.Conditions.Droid
             var intent = CreateIntentForRequest(request);
 
             if (cacheKey >= 0) {// reuse the viewModel
+
                 // This little thingy is used to "inject the viewmodel" into the activity to avoid reinstantiation
                 // see MvxAndroidViewsContainer.TryGetEmbeddedViewModel
                 Bundle extras = intent.Extras;

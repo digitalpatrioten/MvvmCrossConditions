@@ -19,7 +19,7 @@ namespace MvvmCross.Conditions.Droid
         {
             _presenter = presenter;
         }
-
+         
         // thats an OVERLOAD!, just in case somebody reads way to fast ;)
         public bool ShowViewModel(MvxViewModelRequest request, bool viewModelShouldHandleError = true)
         {
