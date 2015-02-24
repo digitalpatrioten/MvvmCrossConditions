@@ -43,8 +43,8 @@ namespace MvvmCross.Conditions.Droid
                 }
                 else {
                     //for us this does not work right now and leads to strange errors, not finding the view model after tombstoning
-                    //var cacheKey = Mvx.Resolve<IMvxChildViewModelCache>().Cache(viewModel);
-                    ShowViewController(request);
+                    var cacheKey = Mvx.Resolve<IMvxChildViewModelCache>().Cache(viewModel);
+                    ShowViewController(request, cacheKey);
                 }
             });
         }
